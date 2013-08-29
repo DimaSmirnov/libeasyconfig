@@ -1,0 +1,61 @@
+USAGE:
+------------------------
+1. Include header file into your program
+	#include "libconfig.h"
+
+2. Compile your program with libconfig.c
+	For example: gcc -g -o test test.c libconfig.c
+
+
+FUNCTIONS:
+------------------------------
+1. Initialize your config library with function:
+	int result = Config_init("config_name");
+	It creates or initialize config file names 'config_name' into directory ~/.config/config_name.conf
+	==> Return value: 0 - sucess, 1 - error
+
+2. Read value of parameter with name 'param_name' onto variable 'par_val':
+	const char* par_val = Config_read_param("param_name");
+	==> Return value: necessary value - sucess, 0 - error
+
+3. Write parameter with value onto config:
+	int result = Config_write_param("param_name", "param_value");
+	If 'param_name' exists - it changes parameter value on 'param_value'
+	==> Return value: 0 - sucess, 1 - error
+
+4. Change value of parameter with name 'param_name' onto value 'new_param_value':
+	int result = Config_change_param("param_name", "new_param_value");
+	==> Return value: 0 - sucess, 1 - error
+
+5. Close config and write all to disk
+	int result = Config_close();
+	==> Return value: 0 - sucess, 1 - error
+
+
+NOTICES:
+--------------------------
+Config changes fisically only when you use 'int result = Config_close();'
+If your program ends without calling this procedure, all changes will be lost!
+
+
+COMMENTS SUPPORT:
+---------------------------------
+Comments separator is ';'
+Supports only comments from new line, like:
+	; Comment
+Not:
+	param=value ;comment
+
+!!! Wrong comments will be deleted automatically
+
+
+EXAMPLES:
+------------------------
+Please check file example.c
+
+
+PREFERED USAGE:
+------------------------------
+This library creates for automatically usage, without manually changes.
+Especially for applications who need to store any variables for future using.
+We not recommend manually change config files. But if you will make a mistake library ask you about wrong lines.
