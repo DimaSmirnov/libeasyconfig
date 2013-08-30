@@ -16,7 +16,7 @@ struct  conf{ // -- Список параметров
 	char config_line[LINE_LENGTH];
 	char param_name[40]; // параметр - название
 	char param_value[40]; // параметр - значение
-}; conf  *config_content;
+} *config_content;
 
 //////////////////////////////////////////// Private
 int _config_create() {
@@ -36,6 +36,8 @@ int Config_init(const char *conf_name) {
 	char temp[LINE_LENGTH], *result;
 	char* comment;
 
+	config_content = calloc(1, sizeof(struct conf));
+
 	homedir = getenv ("HOME");
 	sprintf (config_path,"%s/.config/%s.conf", homedir, conf_name);
 	if (!(pFile=fopen(config_path,"r"))) a=_config_create(); // Файл конфига не существует, создаем его
@@ -43,7 +45,9 @@ int Config_init(const char *conf_name) {
 	while (fgets(temp,LINE_LENGTH,pFile)) {
 		lines_qty++;
 	}
-	config_content = new conf[lines_qty+50]; // 50 это резерв, за 1 цикл работы можно добавить максимум 50 значений в конфиг
+//	config_content = new conf[lines_qty+50]; // 50 это резерв, за 1 цикл работы можно добавить максимум 50 значений в конфиг
+	config_content = realloc(config_content, (lines_qty+50)*sizeof(struct conf));
+
 	for (int i=0;i<lines_qty+50;i++) {
 		strcpy(config_content[i].config_line, "");
 		strcpy(config_content[i].param_name, "");
@@ -138,6 +142,6 @@ return 0;
 		i++;
 	}
 	fclose(pFile);
-	delete[] config_content;
+	free (config_content);
 	return 0;
 }
