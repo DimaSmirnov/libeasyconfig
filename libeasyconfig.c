@@ -10,7 +10,7 @@ FILE *pFile;
 char config_path[100];
 char param_value[50];
 char* homedir;
-int lines_qty=0;
+int config_lines_qty=0;
 
 struct  conf{ // -- Список параметров
 	char config_line[LINE_LENGTH];
@@ -36,24 +36,24 @@ int Config_init(const char *conf_name) {
 	char temp[LINE_LENGTH], *result;
 	char* comment;
 
-	config_content = calloc(1, sizeof(struct conf));
+	config_content = (struct conf*)calloc(1, sizeof(struct conf));
 
 	homedir = getenv ("HOME");
 	sprintf (config_path,"%s/.config/%s.conf", homedir, conf_name);
 	if (!(pFile=fopen(config_path,"r"))) a=_config_create(); // Файл конфига не существует, создаем его
 	if (a) return 1; // при невозможности создания конфига - выходим с ошибкой
 	while (fgets(temp,LINE_LENGTH,pFile)) {
-		lines_qty++;
+		config_lines_qty++;
 	}
-//	config_content = new conf[lines_qty+50]; // 50 это резерв, за 1 цикл работы можно добавить максимум 50 значений в конфиг
-	config_content = realloc(config_content, (lines_qty+50)*sizeof(struct conf));
 
-	for (int i=0;i<lines_qty+50;i++) {
+	config_content = (struct conf*)realloc(config_content, (config_lines_qty+50)*sizeof(struct conf));
+
+	for (int i=0;i<config_lines_qty+50;i++) {
 		strcpy(config_content[i].config_line, "");
 		strcpy(config_content[i].param_name, "");
 		strcpy(config_content[i].param_value, "");
 	}
-	//printf ("DEBUG: Config readed, %d lines\n",lines_qty);
+	//printf ("DEBUG: Config readed, %d lines\n",config_lines_qty);
 	rewind(pFile);
 	while (fgets(temp,LINE_LENGTH,pFile)) {
 		if (strlen(temp)>LINE_LENGTH) { printf("Config error. Very long line: %d\n", counter1); ret=1; break; }  // Слишком длинная строка конфига
@@ -89,7 +89,7 @@ return ret;
 }
 /////////////////////////////////// Public
 char *Config_read_param(const char *par_name) {
-	for (int i=0;i<lines_qty;i++) {
+	for (int i=0;i<config_lines_qty;i++) {
 		//printf ("DEBUG: Read Param %s , %s\n",par_name, config_content[i].param_name);
 		if (!strcmp(config_content[i].param_name,par_name)) {
 			strcpy(param_value,config_content[i].param_value);
@@ -103,7 +103,7 @@ return NULL;
 	int i;
 	char line[LINE_LENGTH];
 
-	for (i=0;i<lines_qty;i++) { // Ищем параметр и если находим то изменяем его (если вызван Config_write_param вместо Config_change_param)
+	for (i=0;i<config_lines_qty;i++) { // Ищем параметр и если находим то изменяем его (если вызван Config_write_param вместо Config_change_param)
 		if (!strcmp(config_content[i].param_name,par_name)) {
 			strcpy(config_content[i].param_value, value);
 			sprintf(config_content[i].config_line,"%s=%s\n",par_name,value);
@@ -114,7 +114,7 @@ return NULL;
 	strcpy(config_content[i].param_name, par_name);
 	strcpy(config_content[i].param_value, value);
 	//printf ("DEBUG: Config_write_param - %s", config_content[i].config_line);
-	lines_qty++;
+	config_lines_qty++;
 
 return 0;
 }
@@ -122,7 +122,7 @@ return 0;
  int Config_change_param(const char *par_name, const char *value) {
 	 char line[LINE_LENGTH];
 
-	for (int i=0;i<lines_qty;i++) {
+	for (int i=0;i<config_lines_qty;i++) {
 		if (!strcmp(config_content[i].param_name,par_name)) {
 			strcpy(config_content[i].param_value, value);
 			sprintf(config_content[i].config_line,"%s=%s\n",par_name,value);
@@ -135,8 +135,8 @@ return 0;
  int Config_close() {
 	int i=0;
 	pFile=fopen(config_path,"w");
-	//printf ("DEBUG: Lines qty= %d\n", lines_qty);
-	while (i<lines_qty) {
+	//printf ("DEBUG: Lines qty= %d\n", config_lines_qty);
+	while (i<config_lines_qty) {
 		fputs (config_content[i].config_line,pFile);
 		//printf ("DEBUG: New config line %d: %s", i, config_content[i].config_line);
 		i++;
